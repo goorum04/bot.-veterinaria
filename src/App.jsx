@@ -1,125 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-const INFO = {
-  nom: "Animalons",
-  tipus: "Hospital Veterinari",
-  adreca: "C. Prat de la Creu 44, baixos, AD500 Andorra la Vella",
-  telefon: "+376 845 454",
-  whatsapp: "+376 375 454",
-  whatsappLink: "https://api.whatsapp.com/send?phone=376375454",
-  email: "animalons@animalons.ad",
-  instagram: "@animalons_veterinari",
-  facebook: "facebook.com/animalonsvet",
-  web: "animalons.ad",
-  horaris: {
-    setmana: "Dilluns a divendres: 10:00 – 13:00 i 16:00 – 20:00",
-    dissabte: "Dissabtes: 10:00 – 13:00",
-    diumenge: "Diumenges: Només urgències",
-    urgencies: "Urgències 24h, els 7 dies de la setmana",
-  },
-  especialitats: [
-    "Especialistes en gats (Cat Friendly)",
-    "Consultes de rutina i vacunacions",
-    "Cirurgies",
-    "Diagnòstic per imatge",
-    "Analítiques de laboratori",
-    "Hospitalització",
-    "Urgències 24h",
-  ],
-  urgencies: [
-    "Pèrdua de consciència, convulsions o no es pot valer per si mateix",
-    "Vòmits continus i decaïment",
-    "Vòmit o diarrea amb molta sang o de color negre",
-    "Sagnats importants, ferides obertes o fractures",
-    "Dificultat per respirar o mucoses blanques/morades",
-    "Febre de més de 39°C",
-    "Cansament exagerat",
-    "Pruïja severa fins fer-se ferides",
-  ],
-};
-
-function responder(texto) {
-  const t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  // Salutació
-  if (/^(hola|buenas|hey|hi|bon dia|bona tarda|bones|hello|buen)/.test(t)) {
-    return `Hola! 👋 Sóc l'assistent d'${INFO.nom}, ${INFO.tipus} a Andorra.\n\nEt puc ajudar amb informació sobre horaris, serveis, urgències, la nostra especialitat en gats i com contactar-nos 🐾`;
-  }
-
-  // Preu / tarifa (abans d'horaris per evitar falsos positius amb "quant" o "hora")
-  if (/preu|precio|cost|cuanto|quant|tarifa|vale|valen|cuesta|cuestan/.test(t)) {
-    return `Per consultes sobre preus i tarifes, posa't en contacte amb nosaltres:\n\n📞 ${INFO.telefon}\n📧 ${INFO.email}\n\nT'assessorarem sense compromís 😊`;
-  }
-
-  // Serveis / vacunes (abans de gats per evitar que "vacuna gato" vagi al check de gats)
-  if (/servei|servicio|que fan|que ofrecen|que hacen|vacun|cirugi|operaci|analitic|diagnostic|radiograf/.test(t)) {
-    return `🏥 A ${INFO.nom} oferim:\n\n${INFO.especialitats.map(s => `• ${s}`).join("\n")}\n\nPer a més informació o per demanar cita truca'ns al ${INFO.telefon} 😊`;
-  }
-
-  // Urgències
-  if (/urgencia|urgencies|emergencia|emergency|24h|24 h|guardia|nit|noche/.test(t)) {
-    return `🚨 Servei d'urgències 24h, 7 dies a la setmana!\n\nTruca'ns al:\n📞 ${INFO.telefon}\n📱 ${INFO.whatsapp} (WhatsApp)\n\nHas de trucar si el teu animal:\n• Perd la consciència o convulsiona\n• Vòmits amb sang o molt decaigut\n• Dificultat per respirar\n• Febre de més de 39°C\n• Ferides obertes o fractures\n\nNo esperis, truca'ns! 🐾`;
-  }
-
-  // Simptomes urgents
-  if (/vomit|convuls|sang|sagnat|respir|febre|fractura|ferid|conscien|decaigu/.test(t)) {
-    return `⚠️ Això pot ser una urgència!\n\nTruca'ns immediatament al:\n📞 ${INFO.telefon}\n📱 ${INFO.whatsapp}\n\nEstem disponibles 24h. Si ens truques abans d'arribar, prepararem el que calgui per atendre't de seguida 🚨`;
-  }
-
-  // Diumenge
-  if (/diumenge|domingo|sunday/.test(t)) {
-    return `Els diumenges només atenim urgències 🚨\n\nPer urgències truca'ns al ${INFO.telefon} o al ${INFO.whatsapp} (disponible 24h).\n\nEls dies feiners obrim de 10:00 a 13:00 i de 16:00 a 20:00 🐾`;
-  }
-
-  // Dissabte
-  if (/dissabte|sabado|saturday/.test(t)) {
-    return `Els dissabtes obrim de 10:00 a 13:00 🕙\n\nRecorda que per urgències estem disponibles les 24h al ${INFO.whatsapp} 🚨`;
-  }
-
-  // Horaris (tret "quan" del regex perquè xocava amb "quant costa")
-  if (/horari|horario|\bhora\b|obert|obre|tanca|obrir|open|cuando/.test(t)) {
-    return `Els nostres horaris són:\n\n🗓️ ${INFO.horaris.setmana}\n🗓️ ${INFO.horaris.dissabte}\n⚠️ ${INFO.horaris.diumenge}\n\n🚨 ${INFO.horaris.urgencies}\n\nNecessites alguna cosa més? 😊`;
-  }
-
-  // Gats / especialitat felina
-  if (/\bgat\b|\bgats\b|felino|felin|miau|moix/.test(t)) {
-    return `🐱 Som especialistes en gats!\n\nTenim instal·lacions específiques per a felins:\n• Sala d'espera sense contacte visual amb gossos\n• Consulta exclusiva per a gats (Consulta 3)\n• Feromones Feliway per reduir l'estrès\n• Hospitalització individual amb llum natural\n\nEls teus gats estan en bones mans! 🐾`;
-  }
-
-  // Gossos
-  if (/\bgos\b|\bgossos\b|perro|dog|canino/.test(t)) {
-    return `🐶 Sí, també atenem gossos i tota mena d'animals de companyia!\n\nOfferim consultes de rutina, vacunacions, cirurgies, diagnòstics i urgències 24h.\n\nPer demanar cita truca'ns al ${INFO.telefon} 😊`;
-  }
-
-  // Cita / visita
-  if (/cita|visita|reserva|demanar|pedir|appoint|consulta/.test(t)) {
-    return `Per demanar cita posa't en contacte amb nosaltres:\n\n📞 ${INFO.telefon}\n📱 ${INFO.whatsapp} (WhatsApp)\n📧 ${INFO.email}\n\nHorari d'atenció:\n${INFO.horaris.setmana}\n${INFO.horaris.dissabte} 😊`;
-  }
-
-  // Ubicació
-  if (/on|adreca|direccio|mapa|arribar|ubicacio|donde|location|andorra la vella/.test(t)) {
-    return `📍 Ens trobes a:\n${INFO.adreca}\n\nEstem al centre d'Andorra la Vella. T'esperem! 🐾`;
-  }
-
-  // Telèfon / contacte
-  if (/telefon|numero|trucar|contacte|phone|whatsapp|email|correu/.test(t)) {
-    return `📞 Telèfon: ${INFO.telefon}\n📱 WhatsApp: ${INFO.whatsapp}\n📧 Email: ${INFO.email}\n\nInstagram: ${INFO.instagram}\n\nPer urgències estem disponibles les 24h! 🚨`;
-  }
-
-  // Instal·lacions
-  if (/instal|instalacio|clinica|hospital|centre|infraestructura/.test(t)) {
-    return `🏥 Les nostres instal·lacions inclouen:\n\n• Sala d'espera adaptada per a gats i gossos\n• Consultes equipades amb tecnologia avançada\n• Laboratori propi per diagnòstics ràpids\n• Quiròfan\n• Hospitalització individual\n• Box d'urgències\n\nVes a animalons.ad per veure fotos! 😊`;
-  }
-
-  // Agraïment / comiat
-  if (/gracies|gracias|thank|adeu|hasta|bye|agraimen/.test(t)) {
-    return `De res! Ha estat un plaer ajudar-te 😊🐾\n\nRecorda que per urgències estem disponibles les 24h al ${INFO.whatsapp}.\n\nFins aviat!`;
-  }
-
-  // Genèric
-  return `Gràcies per contactar amb ${INFO.nom} 🐾\n\nEt puc ajudar amb informació sobre horaris, serveis, urgències, especialitat en gats o com arribar.\n\nO si prefereixes, truca'ns directament al ${INFO.telefon} i t'atenem encantats 😊`;
-}
-
 function getTime() {
   return new Date().toLocaleTimeString("ca", { hour: "2-digit", minute: "2-digit" });
 }
@@ -128,6 +8,7 @@ const QR = ["🕐 Horaris", "🚨 Urgències", "🐱 Gats", "🏥 Serveis", "�
 
 export default function App() {
   const [msgs, setMsgs] = useState([]);
+  const [history, setHistory] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -137,22 +18,32 @@ export default function App() {
   useEffect(() => {
     if (greeted.current) return;
     greeted.current = true;
-    setTimeout(() => botReply("hola", true), 700);
+    setTimeout(() => botReply("hola"), 700);
   }, []);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [msgs, loading]);
 
-  function botReply(text) {
+  async function botReply(text) {
     setLoading(true);
     setShowQR(false);
-    setTimeout(() => {
-      const reply = responder(text);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history }),
+      });
+      const data = await res.json();
+      const reply = data.reply || "Ho sento, hi ha hagut un error. Truca'ns al +376 845 454.";
+      setHistory(prev => [...prev, { role: "user", content: text }, { role: "assistant", content: reply }]);
       setMsgs(prev => [...prev, { role: "bot", text: reply, time: getTime() }]);
+    } catch {
+      setMsgs(prev => [...prev, { role: "bot", text: "Ho sento, hi ha hagut un error tècnic. Truca'ns al +376 845 454. 📞", time: getTime() }]);
+    } finally {
       setLoading(false);
       setShowQR(true);
-    }, 600 + Math.random() * 500);
+    }
   }
 
   function send(text) {
