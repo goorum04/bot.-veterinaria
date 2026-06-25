@@ -46,19 +46,14 @@ function responder(texto) {
     return `Hola! 👋 Sóc l'assistent d'${INFO.nom}, ${INFO.tipus} a Andorra.\n\nEt puc ajudar amb informació sobre horaris, serveis, urgències, la nostra especialitat en gats i com contactar-nos 🐾`;
   }
 
-  // Horaris
-  if (/horari|hora|quan|obert|obre|tanca|obrir|open|horario|cuando/.test(t)) {
-    return `Els nostres horaris són:\n\n🗓️ ${INFO.horaris.setmana}\n🗓️ ${INFO.horaris.dissabte}\n⚠️ ${INFO.horaris.diumenge}\n\n🚨 ${INFO.horaris.urgencies}\n\nNecessites alguna cosa més? 😊`;
+  // Preu / tarifa (abans d'horaris per evitar falsos positius amb "quant" o "hora")
+  if (/preu|precio|cost|cuanto|quant|tarifa|vale|valen|cuesta|cuestan/.test(t)) {
+    return `Per consultes sobre preus i tarifes, posa't en contacte amb nosaltres:\n\n📞 ${INFO.telefon}\n📧 ${INFO.email}\n\nT'assessorarem sense compromís 😊`;
   }
 
-  // Diumenge
-  if (/diumenge|domingo|sunday/.test(t)) {
-    return `Els diumenges només atenim urgències 🚨\n\nPer urgències truca'ns al ${INFO.telefon} o al ${INFO.whatsapp} (disponible 24h).\n\nEls dies feiners obrim de 10:00 a 13:00 i de 16:00 a 20:00 🐾`;
-  }
-
-  // Dissabte
-  if (/dissabte|sabado|saturday/.test(t)) {
-    return `Els dissabtes obrim de 10:00 a 13:00 🕙\n\nRecorda que per urgències estem disponibles les 24h al ${INFO.whatsapp} 🚨`;
+  // Serveis / vacunes (abans de gats per evitar que "vacuna gato" vagi al check de gats)
+  if (/servei|servicio|que fan|que ofrecen|que hacen|vacun|cirugi|operaci|analitic|diagnostic|radiograf/.test(t)) {
+    return `🏥 A ${INFO.nom} oferim:\n\n${INFO.especialitats.map(s => `• ${s}`).join("\n")}\n\nPer a més informació o per demanar cita truca'ns al ${INFO.telefon} 😊`;
   }
 
   // Urgències
@@ -71,23 +66,33 @@ function responder(texto) {
     return `⚠️ Això pot ser una urgència!\n\nTruca'ns immediatament al:\n📞 ${INFO.telefon}\n📱 ${INFO.whatsapp}\n\nEstem disponibles 24h. Si ens truques abans d'arribar, prepararem el que calgui per atendre't de seguida 🚨`;
   }
 
+  // Diumenge
+  if (/diumenge|domingo|sunday/.test(t)) {
+    return `Els diumenges només atenim urgències 🚨\n\nPer urgències truca'ns al ${INFO.telefon} o al ${INFO.whatsapp} (disponible 24h).\n\nEls dies feiners obrim de 10:00 a 13:00 i de 16:00 a 20:00 🐾`;
+  }
+
+  // Dissabte
+  if (/dissabte|sabado|saturday/.test(t)) {
+    return `Els dissabtes obrim de 10:00 a 13:00 🕙\n\nRecorda que per urgències estem disponibles les 24h al ${INFO.whatsapp} 🚨`;
+  }
+
+  // Horaris (tret "quan" del regex perquè xocava amb "quant costa")
+  if (/horari|horario|\bhora\b|obert|obre|tanca|obrir|open|cuando/.test(t)) {
+    return `Els nostres horaris són:\n\n🗓️ ${INFO.horaris.setmana}\n🗓️ ${INFO.horaris.dissabte}\n⚠️ ${INFO.horaris.diumenge}\n\n🚨 ${INFO.horaris.urgencies}\n\nNecessites alguna cosa més? 😊`;
+  }
+
   // Gats / especialitat felina
-  if (/gat|cat|felino|felin|miau|moix/.test(t)) {
+  if (/\bgat\b|\bgats\b|felino|felin|miau|moix/.test(t)) {
     return `🐱 Som especialistes en gats!\n\nTenim instal·lacions específiques per a felins:\n• Sala d'espera sense contacte visual amb gossos\n• Consulta exclusiva per a gats (Consulta 3)\n• Feromones Feliway per reduir l'estrès\n• Hospitalització individual amb llum natural\n\nEls teus gats estan en bones mans! 🐾`;
   }
 
   // Gossos
-  if (/gos|perro|dog|canino/.test(t)) {
+  if (/\bgos\b|\bgossos\b|perro|dog|canino/.test(t)) {
     return `🐶 Sí, també atenem gossos i tota mena d'animals de companyia!\n\nOfferim consultes de rutina, vacunacions, cirurgies, diagnòstics i urgències 24h.\n\nPer demanar cita truca'ns al ${INFO.telefon} 😊`;
   }
 
-  // Serveis / què fan
-  if (/servei|servicio|que fan|que ofrecen|que hacen|vacun|cirugi|operaci|analitic|diagnostic|radiograf/.test(t)) {
-    return `🏥 A ${INFO.nom} oferim:\n\n${INFO.especialitats.map(s => `• ${s}`).join("\n")}\n\nPer a més informació o per demanar cita truca'ns al ${INFO.telefon} 😊`;
-  }
-
   // Cita / visita
-  if (/cita|visita|reserva|demanar|pedir|appoint|hora|consulta/.test(t)) {
+  if (/cita|visita|reserva|demanar|pedir|appoint|consulta/.test(t)) {
     return `Per demanar cita posa't en contacte amb nosaltres:\n\n📞 ${INFO.telefon}\n📱 ${INFO.whatsapp} (WhatsApp)\n📧 ${INFO.email}\n\nHorari d'atenció:\n${INFO.horaris.setmana}\n${INFO.horaris.dissabte} 😊`;
   }
 
@@ -99,11 +104,6 @@ function responder(texto) {
   // Telèfon / contacte
   if (/telefon|numero|trucar|contacte|phone|whatsapp|email|correu/.test(t)) {
     return `📞 Telèfon: ${INFO.telefon}\n📱 WhatsApp: ${INFO.whatsapp}\n📧 Email: ${INFO.email}\n\nInstagram: ${INFO.instagram}\n\nPer urgències estem disponibles les 24h! 🚨`;
-  }
-
-  // Preu / tarifa
-  if (/preu|precio|cost|cuanto|quant|tarifa/.test(t)) {
-    return `Per consultes sobre preus i tarifes, posa't en contacte amb nosaltres:\n\n📞 ${INFO.telefon}\n📧 ${INFO.email}\n\nT'assessorarem sense compromís 😊`;
   }
 
   // Instal·lacions
